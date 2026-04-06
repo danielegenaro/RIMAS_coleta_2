@@ -1,11 +1,19 @@
+```html
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html> 
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>RIMAS – Formulário de Coleta</title>
+<!-- Google OAuth2 & Sync Configuration -->
+<script src="google-config.js"></script>
+<script src="google-sync-module.js"></script>
+```
+<html lang="pt-BR">
+
+
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -79,6 +87,22 @@
   .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+```html
+<script>
+  // Inicializar Google Sync Manager
+  const googleSync = new GoogleSyncManager(GOOGLE_CONFIG);
+  
+  // Carregar Google Sign-In
+  (async () => {
+    try {
+      await googleSync.initAuth();
+      console.log('✅ Google Auth inicializado');
+    } catch (error) {
+      console.error('❌ Erro ao inicializar Google:', error);
+    }
+  })();
+</script>
+```
 
   body {
     font-family: var(--font-sans);
