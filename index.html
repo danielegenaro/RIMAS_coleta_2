@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0066CC">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <title>RIMAS Coleta - Sincronização com Google</title>
+    
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #0066CC 0%, #004499 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        main {
+            padding: 30px 20px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            font-size: 18px;
+            color: #0066CC;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0066CC;
+        }
+        
+        /* Google Login */
+        #google-signin-button {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        #user-info {
+            background: #E8F5E9;
+            padding: 15px;
+            border-left: 4px solid #00AA00;
+            border-radius: 5px;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        #user-info strong {
+            color: #1B5E20;
+        }
+        
+        /* Formulário */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        input[type="file"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="date"]:focus,
+        input[type="time"]:focus,
+        input[type="file"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #0066CC;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        /* Botões */
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px 5px 5px 0;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-primary {
+            background: #0066CC;
+            color: white;
+        }
+        
+        .btn-primary:hover:not(:disabled) {
+            background: #004499;
+        }
+        
+        .btn-sync {
+            background: #FF6600;
+            color: white;
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+        }
+        
+        .btn-sync:hover:not(:disabled) {
+            background: #E55A00;
+        }
+        
+        .btn-logout {
+            background: #FF4444;
+            color: white;
+            font-size: 12px;
+            padding: 8px 12px;
+        }
+        
+        .btn-logout:hover {
+            background: #CC0000;
+        }
+        
+        /* Status */
+        #sync-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .status-success {
+            background: #E8F5E9;
+            border-left: 4px solid #00AA00;
+            color: #1B5E20;
+        }
+        
+        .status-error {
+            background: #FFEBEE;
+            border-left: 4px solid #FF0000;
+            color: #B71C1C;
+        }
+        
+        .status-loading {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            color: #E65100;
+        }
+        
+        /* Fotos */
+        .photo-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .photo-item {
+            position: relative;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .photo-item img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+        }
+        
+        .photo-count {
+            background: #0066CC;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 22px;
+            }
+            
+            main {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔄 RIMAS Coleta</h1>
+            <p>Sincronização com Google Sheets</p>
+        </header>
+        
+        <main>
+            <!-- ========== SEÇÃO 1: AUTENTICAÇÃO ========== -->
+            <section class="section">
+                <h2>👤 Autenticação Google</h2>
+                
+                <!-- Botão de Login -->
+                <div id="google-signin-button" style="margin: 20px 0;"></div>
+                
+                <!-- Info do usuário -->
+                <div id="user-info"></div>
+                
+                <!-- Botão desconectar -->
+                <button class="btn-logout" onclick="googleSync?.logout()" style="display: none;" id="logout-btn">
+                    Desconectar
+                </button>
+            </section>
+            
+            <!-- ========== SEÇÃO 2: FORMULÁRIO ========== -->
+            <section class="section" id="form-section" style="display: none;">
+                <h2>📝 Dados da Medição</h2>
+                
+                <div class="form-group">
+                    <label for="estacao">Estação (Código SIAGAS)</label>
+                    <input type="text" id="estacao" placeholder="Ex: 354001" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="na">Nível d'água (NA) em metros</label>
+                    <input type="number" id="na" step="0.01" placeholder="Ex: 12.35" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="data">Data</label>
+                    <input type="date" id="data" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="hora">Hora</label>
+                    <input type="time" id="hora" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bateria">Bateria (%)</label>
+                    <input type="number" id="bateria" min="0" max="100" placeholder="Ex: 85" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="status">Status</label>
+                    <select id="status" required>
+                        <option value="">Selecione...</option>
+                        <option value="OK">OK</option>
+                        <option value="Falha">Falha</option>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Manutenção">Manutenção</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="observacoes">Observações</label>
+                    <textarea id="observacoes" placeholder="Observações adicionais..."></textarea>
+                </div>
+                
+                <!-- Fotos -->
+                <div class="form-group">
+                    <label for="fotos">Fotos (máx 5)</label>
+                    <input type="file" id="fotos" accept="image/*" multiple>
+                    <div id="photo-preview" class="photo-preview"></div>
+                    <div id="photo-count" class="photo-count" style="display: none;">
+                        📸 <span id="photo-number">0</span> foto(s)
+                    </div>
+                </div>
+            </section>
+            
+            <!-- ========== SEÇÃO 3: SINCRONIZAÇÃO ========== -->
+            <section class="section" id="sync-section" style="display: none;">
+                <h2>🔄 Sincronização</h2>
+                
+                <button class="btn-sync" id="sync-button" onclick="syncirFormulario()" disabled>
+                    🔄 Sincronizar com Google Sheets
+                </button>
+                
+                <div id="sync-status"></div>
+            </section>
+            
+            <!-- ========== SEÇÃO 4: HISTÓRICO ========== -->
+            <section class="section" id="history-section" style="display: none;">
+                <h2>📊 Histórico de Syncs</h2>
+                <button class="btn-primary" onclick="mostrarHistorico()">Ver Histórico</button>
+                <div id="sync-history" style="margin-top: 15px;"></div>
+            </section>
+        </main>
+    </div>
+    
+    <!-- ========== SCRIPTS ========== -->
+    
+    <!-- Google Configuration -->
+    <script src="google-config.js"></script>
+    
+    <!-- Google Sync Module -->
+    <script src="google-sync-module.js"></script>
+    
+    <!-- Aplicação -->
+    <script>
+        // ========== INICIALIZAÇÃO ==========
+        let googleSync;
+        
+        // Inicializar data e hora atuais
+        function inicializarData() {
+            const agora = new Date();
+            document.getElementById('data').valueAsDate = agora;
+            document.getElementById('hora').value = agora.toTimeString().slice(0, 5);
+        }
+        
+        // Quando página carrega
+        window.addEventListener('DOMContentLoaded', async () => {
+            inicializarData();
+            
+            // Inicializar Google Sync
+            googleSync = new GoogleSyncManager(GOOGLE_CONFIG);
+            
+            try {
+                await googleSync.initAuth();
+                console.log('✅ Google Auth inicializado');
+            } catch (error) {
+                console.error('❌ Erro ao inicializar Google:', error);
+                alert('Erro ao carregar autenticação Google. Verifique o console.');
+            }
+            
+            // Monitorar mudanças de autenticação
+            monitorarAutenticacao();
+            
+            // Monitorar upload de fotos
+            document.getElementById('fotos').addEventListener('change', handleFotosChange);
+        });
+        
+        // ========== AUTENTICAÇÃO ==========
+        function monitorarAutenticacao() {
+            const checkAuth = setInterval(() => {
+                if (googleSync && googleSync.isLoggedIn()) {
+                    // Usuário está logado
+                    document.getElementById('google-signin-button').style.display = 'none';
+                    document.getElementById('user-info').style.display = 'block';
+                    document.getElementById('logout-btn').style.display = 'inline-block';
+                    document.getElementById('form-section').style.display = 'block';
+                    document.getElementById('sync-section').style.display = 'block';
+                    document.getElementById('history-section').style.display = 'block';
+                    document.getElementById('sync-button').disabled = false;
+                    clearInterval(checkAuth);
+                } else {
+                    // Usuário não está logado
+                    document.getElementById('google-signin-button').style.display = 'block';
+                    document.getElementById('user-info').style.display = 'none';
+                    document.getElementById('logout-btn').style.display = 'none';
+                    document.getElementById('form-section').style.display = 'none';
+                    document.getElementById('sync-section').style.display = 'none';
+                    document.getElementById('history-section').style.display = 'none';
+                }
+            }, 500);
+            
+            // Parar após 5 segundos
+            setTimeout(() => clearInterval(checkAuth), 5000);
+        }
+        
+        // ========== FOTOS ==========
+        function handleFotosChange(event) {
+            const files = event.target.files;
+            const preview = document.getElementById('photo-preview');
+            const count = document.getElementById('photo-count');
+            const number = document.getElementById('photo-number');
+            
+            preview.innerHTML = '';
+            
+            if (files.length > 5) {
+                alert('Máximo de 5 fotos permitidas');
+                event.target.value = '';
+                return;
+            }
+            
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = document.createElement('div');
+                    div.className = 'photo-item';
+                    div.innerHTML = `<img src="${e.target.result}" alt="Foto">`;
+                    preview.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            if (files.length > 0) {
+                number.textContent = files.length;
+                count.style.display = 'inline-block';
+            } else {
+                count.style.display = 'none';
+            }
+        }
+        
+        // ========== SINCRONIZAÇÃO ==========
+        async function syncirFormulario() {
+            if (!googleSync.isLoggedIn()) {
+                alert('❌ Faça login com Google primeiro!');
+                return;
+            }
+            
+            const statusDiv = document.getElementById('sync-status');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status-loading';
+            statusDiv.innerHTML = '<span class="loading"></span> Sincronizando...';
+            
+            try {
+                // Validar formulário
+                if (!document.getElementById('estacao').value) {
+                    throw new Error('Preencha o código da estação');
+                }
+                if (!document.getElementById('na').value) {
+                    throw new Error('Preencha o nível d\'água');
+                }
+                
+                // Pegar dados do formulário
+                const formData = {
+                    estacao: document.getElementById('estacao').value,
+                    na: parseFloat(document.getElementById('na').value),
+                    data: document.getElementById('data').value,
+                    hora: document.getElementById('hora').value,
+                    bateria: parseInt(document.getElementById('bateria').value) || 0,
+                    status: document.getElementById('status').value || 'OK',
+                    observacoes: document.getElementById('observacoes').value,
+                    tecnico: googleSync.userEmail
+                };
+                
+                // Pegar fotos
+                const fotoFiles = document.getElementById('fotos').files;
+                const fotos = [];
+                for (let file of fotoFiles) {
+                    fotos.push(file);
+                }
+                
+                // Sincronizar
+                const result = await googleSync.syncFormData(formData, fotos);
+                
+                // Sucesso
+                statusDiv.className = 'status-success';
+                statusDiv.innerHTML = `
+                    <strong>✅ Sincronizado com sucesso!</strong><br>
+                    Estação: ${formData.estacao}<br>
+                    Fotos: ${fotos.length}<br>
+                    <a href="https://docs.google.com/spreadsheets/d/${GOOGLE_CONFIG.sheetsId}" target="_blank" style="color: #0066CC; text-decoration: underline;">
+                        Ver Google Sheets →
+                    </a>
+                `;
+                
+                // Limpar formulário
+                setTimeout(() => {
+                    document.getElementById('estacao').value = '';
+                    document.getElementById('na').value = '';
+                    document.getElementById('bateria').value = '';
+                    document.getElementById('status').value = '';
+                    document.getElementById('observacoes').value = '';
+                    document.getElementById('fotos').value = '';
+                    document.getElementById('photo-preview').innerHTML = '';
+                    document.getElementById('photo-count').style.display = 'none';
+                }, 2000);
+                
+            } catch (error) {
+                statusDiv.className = 'status-error';
+                statusDiv.innerHTML = `<strong>❌ Erro: ${error.message}</strong>`;
+                console.error('Erro completo:', error);
+            }
+        }
+        
+        // ========== HISTÓRICO ==========
+        function mostrarHistorico() {
+            const history = googleSync?.getSyncHistory() || [];
+            const historyDiv = document.getElementById('sync-history');
+            
+            if (history.length === 0) {
+                historyDiv.innerHTML = '<p style="color: #999;">Nenhum sync realizado ainda.</p>';
+                return;
+            }
+            
+            let html = `<table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <tr style="background: #f0f0f0;">
+                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Data/Hora</th>
+                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Estação</th>
+                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Status</th>
+                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Fotos</th>
+                </tr>`;
+            
+            history.reverse().slice(0, 10).forEach(record => {
+                const date = new Date(record.timestamp).toLocaleString('pt-BR');
+                html += `<tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${date}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${record.estacao || '-'}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><span style="color: #00AA00;">✅ ${record.status}</span></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">${record.fotosCount || 0}</td>
+                </tr>`;
+            });
+            
+            html += '</table>';
+            historyDiv.innerHTML = html;
+        }
+        
+        // ========== INTERNET ==========
+        window.addEventListener('online', () => {
+            console.log('📡 Internet conectada!');
+            if (googleSync?.isLoggedIn()) {
+                console.log('🔄 Pronto para sincronizar');
+            }
+        });
+        
+        window.addEventListener('offline', () => {
+            console.log('⚠️ Internet desconectada');
+        });
+    </script>
+    
+    <!-- Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('✅ Service Worker registrado'))
+                .catch(err => console.error('❌ Erro ao registrar SW:', err));
+        }
+    </script>
+</body>
+</html>
