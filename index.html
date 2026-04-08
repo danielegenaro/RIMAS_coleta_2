@@ -12,6 +12,30 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
+  .btn-export {
+  background: #0066CC;
+  color: white;
+  padding: 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn-export:hover {
+  background: #004499;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,102,204,0.3);
+}
+
+.btn-export small {
+  display: block;
+  font-size: 11px;
+  margin-top: 3px;
+  opacity: 0.9;
+}
   :root {
     --bg: #0f1117;
     --surface: #181c26;
@@ -1061,6 +1085,43 @@
 
 </style>
 </head>
+  <!-- Módulo de Exportação -->
+<script src="exportacao-modulo.js"></script>
+
+<script>
+// Adicionar botões de exportação
+
+// Função para vincular ao seu formulário
+function salvarFormularioCompleto() {
+  const dados = {
+    data: document.getElementById('data').value,
+    hora: document.getElementById('hora').value,
+    tecnico: 'Usuário', // ou pegue do Google Login
+    estacao: document.getElementById('estacao').value,
+    na: document.getElementById('na').value,
+    bateria: document.getElementById('bateria').value,
+    status: document.getElementById('status').value,
+    observacoes: document.getElementById('observacoes').value
+  };
+  
+  // Pegar fotos
+  const fotoFiles = document.getElementById('fotos').files;
+  const fotos = [];
+  const reader = new FileReader();
+  
+  // TODO: Converter fotos para data URLs e adicionar
+  
+  exportador.salvarFormulario(dados, fotos);
+  alert('✅ Formulário salvo com sucesso!');
+}
+
+// Funções de exportação
+function exportar(tipo) {
+  if (tipo === 'html') exportador.exportarHTML();
+  else if (tipo === 'json') exportador.exportarJSON();
+  else if (tipo === 'csv') exportador.exportarCSV();
+}
+</script>
 <body>
 <div id="app">
 
@@ -1138,6 +1199,23 @@
       <div class="empty-desc">Selecione um ponto no mapa ou na lista para iniciar o preenchimento do formulário de coleta.</div>
     </div>
   </div>
+  
+  <!-- Seção de Exportações -->
+<section class="section" id="export-section">
+  <h2>📥 Exportar Formulários</h2>
+  
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
+    <button class="btn-export" onclick="exportar('html')">
+      📊 Exportar HTML<br><small>(Com fotos)</small>
+    </button>
+    <button class="btn-export" onclick="exportar('json')">
+      📋 Exportar JSON<br><small>(Estruturado)</small>
+    </button>
+    <button class="btn-export" onclick="exportar('csv')">
+      📄 Exportar CSV<br><small>(Simples)</small>
+    </button>
+  </div>
+</section>
 
   <!-- RECORDS PANEL -->
   <div id="records-panel" class="panel">
