@@ -1122,6 +1122,42 @@ function exportar(tipo) {
   else if (tipo === 'csv') exportador.exportarCSV();
 }
 </script>
+  <!-- Gerenciador de Formulários (salvar automaticamente) -->
+<script src="salvar-formularios.js"></script>
+
+<script>
+// FUNÇÃO CRUCIAL: Salvar formulário após preencher
+function salvarFormularioLocal() {
+  const dados = {
+    data: document.getElementById('data')?.value || '',
+    hora: document.getElementById('hora')?.value || '',
+    tecnico: googleSync?.userEmail || 'Desconhecido',
+    estacao: document.getElementById('estacao')?.value || '',
+    na: document.getElementById('na')?.value || '',
+    bateria: document.getElementById('bateria')?.value || '',
+    status: document.getElementById('status')?.value || '',
+    observacoes: document.getElementById('observacoes')?.value || '',
+    fotosCount: document.getElementById('fotos')?.files?.length || 0
+  };
+  
+  // Pegar fotos selecionadas
+  const fotoFiles = document.getElementById('fotos')?.files || [];
+  const fotosArray = Array.from(fotoFiles);
+  
+  // Salvar
+  gerenciador.salvarFormularioComFotos(dados, fotosArray);
+  
+  console.log('✅ Formulário salvo localmente!', dados);
+  alert(`✅ Formulário salvo! (Total: ${gerenciador.contarFormularios()})`);
+}
+
+// MODIFICAR sua função de sincronização
+// Encontre onde você sincroniza e ANTES de sincronizar, chame:
+// salvarFormularioLocal();
+
+// Exemplo: Se você tem um botão "Sincronizar", adicione isto ao onclick:
+// onclick="salvarFormularioLocal(); seuSyncAnterior();"
+</script>
 <body>
 <div id="app">
 
