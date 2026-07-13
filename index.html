@@ -2417,9 +2417,10 @@ function exportAllCSV() {
   if (!records.length) { showToast('Nenhum registro para exportar'); return; }
 
   const headers = ['siagas','ana','nomePonto','uf','ur','municipio','localPonto','uf_sureg','roteiro','equipe',
-    'data','situacao','situacao_outros','pcd','pcd_tipo','pcd_obs','na_manual','na_equip','voltagem','serie','equipamento','equipamento_outros','patrimonio','sn1','sn2',
-    'atividades','atividades_outros','amostra_tipo','amostra_obs','limpeza_obs',
-    'condicao','os','problemas','obs','lat','lon','cota','bacia','subbacia','syncStatus','updatedAt'];
+  'data','situacao','situacao_outros','pcd','pcd_tipo','pcd_obs',
+  'na_manual_h1','na_manual_v1','na_manual_h2','na_manual_v2','na_manual_h3','na_manual_v3',
+  'na_equip_h1','na_equip_v1','na_equip_h2','na_equip_v2','na_equip_h3','na_equip_v3',
+  'voltagem','serie','equipamento',...
 
   const rows = records.map(r => headers.map(h => {
     let v;
