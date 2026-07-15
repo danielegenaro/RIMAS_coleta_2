@@ -508,6 +508,65 @@
   /* ── Nav buttons ── */
   .stepper-nav {
     background: var(--surface);
+    ```css
+  /* ===== SAVE BUTTON NO HEADER ===== */
+  .form-header-actions {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    z-index: 10;
+  }
+
+  .btn-header-save {
+    background: var(--accent);
+    border: none;
+    color: #000;
+    padding: 9px 16px;
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,200,150,0.2);
+  }
+
+  .btn-header-save:hover {
+    background: #00e5aa;
+    box-shadow: 0 4px 12px rgba(0,200,150,0.4);
+  }
+
+  .btn-header-save:active {
+    transform: scale(0.98);
+  }
+
+  .btn-header-save.saving {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .save-status {
+    font-size: 10px;
+    color: var(--text2);
+    font-family: var(--font-mono);
+    padding: 3px 8px;
+    border-radius: 3px;
+    background: rgba(0,200,150,0.1);
+    white-space: nowrap;
+  }
+
+  .form-header {
+    position: relative;
+  }
+```
+
     border-top: 1px solid var(--border);
     padding: 10px 12px;
     display: flex;
@@ -1558,10 +1617,17 @@ function buildForm(well) {
   const sections = buildSections(well, d, today, code);
 
   panel.innerHTML = `
+ panel.innerHTML = `
     <div class="form-header">
       <div class="form-point-id">Cód. SIAGAS: ${code}${well['Cód ANA'] ? ' · ANA: '+well['Cód ANA'] : ''}</div>
       <div class="form-point-name">${well.nome || '—'}</div>
       <div class="form-point-loc">${well.municipio || ''} · ${(well.uf || '').trim()} · ${well['UR Responsável'] || well.ur || ''}</div>
+      <div class="form-header-actions">
+        <div class="save-status" id="save-status-indicator">Não salvo</div>
+        <button class="btn-header-save" id="btn-header-save" onclick="saveFormWithValidation()" title="Salvar dados do formulário (Ctrl+S)">
+          💾 SALVAR
+        </button>
+      </div>
     </div>
 
     <div class="stepper-bar">
@@ -2893,9 +2959,27 @@ async function init() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
+
+  // Atalho de teclado: Ctrl+S para salvar
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      const btn = document.getElementById('btn-header-save');
+      const formPanel = document.getElementById('form-panel');
+      if (btn && formPanel && formPanel.classList.contains('active')) {
+        saveFormWithValidation();
+      }
+    }
+  });
 }
 
 init();
+  ```javascript
+  // Atualizar indicador de salvamento a cada 10 segundos
+  setInterval(() => {
+    updateSaveIndicator();
+  }, 10000);
+```
 </script>
 
 </body>
